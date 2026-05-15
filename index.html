@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Rick Board</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      font-family: 'Fredoka One', cursive;
+      overflow-x: hidden;
+    }
+
+    .bg-slide {
+      position: fixed;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: opacity 1.5s ease-in-out;
+      opacity: 0;
+      z-index: 0;
+    }
+    .bg-slide.active { opacity: 1; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px 60px;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(3rem, 10vw, 7rem);
+      letter-spacing: 6px;
+      color: #FFD93D;
+      text-shadow:
+        4px 4px 0 #FF6B6B,
+        8px 8px 0 #C77DFF,
+        -2px -2px 0 #000,
+        0 0 40px rgba(255,217,61,0.7);
+      line-height: 1;
+      animation: wobble 3s ease-in-out infinite;
+    }
+
+    @keyframes wobble {
+      0%, 100% { transform: rotate(-1.5deg) scale(1); }
+      50%       { transform: rotate(1.5deg) scale(1.03); }
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(6px);
+      border-radius: 999px;
+      padding: 10px 28px;
+      color: #fff;
+      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 18px;
+      width: 100%;
+      max-width: 900px;
+      margin-top: 32px;
+    }
+
+    .sound-btn {
+      border: none;
+      border-radius: 18px;
+      padding: 22px 12px 18px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.35), 0 0 20px rgba(255,255,255,0.1);
+      transform: translateY(0);
+      transition: transform 0.1s, box-shadow 0.1s, filter 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sound-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%);
+      border-radius: inherit;
+    }
+
+    .sound-btn:hover {
+      filter: brightness(1.12) saturate(1.2);
+      transform: translateY(-3px) rotate(-1deg);
+      box-shadow: 0 9px 0 rgba(0,0,0,0.3), 0 0 30px rgba(255,255,255,0.15);
+    }
+
+    .sound-btn:active, .sound-btn.playing {
+      transform: translateY(3px) scale(0.96);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+    }
+
+    .sound-btn.playing {
+      animation: pulse 0.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { filter: brightness(1) saturate(1.2); }
+      to   { filter: brightness(1.3) saturate(1.6); }
+    }
+
+    .btn-emoji {
+      font-size: 2.4rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+    }
+
+    .btn-label {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transform: scale(0);
+      animation: ripple-anim 0.5s linear;
+      pointer-events: none;
+    }
+    @keyframes ripple-anim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    footer {
+      margin-top: 40px;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      .board { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-slide active" style="background-image:url('photo1.jpg')"></div>
+  <div class="bg-slide"        style="background-image:url('photo2.jpg')"></div>
+  <div class="bg-slide"        style="background-image:url('photo3.jpg')"></div>
+  <div class="overlay"></div>
+
+  <div class="content">
+    <header>
+      <h1>The Rick Board</h1>
+      <p class="subtitle">When you're in need of a laugh, or to get Morgan to work, use this.</p>
+    </header>
+
+    <div class="board">
+      <button class="sound-btn" style="background:#FF6B6B;" data-sound="Afrikaans">
+        <span class="btn-emoji">🌍</span><span class="btn-label">Afrikaans</span>
+      </button>
+      <button class="sound-btn" style="background:#FF8E53;" data-sound="Bark">
+        <span class="btn-emoji">🐕</span><span class="btn-label">Bark</span>
+      </button>
+      <button class="sound-btn" style="background:#A8E063;" data-sound="Burpy">
+        <span class="btn-emoji">🤢</span><span class="btn-label">Burpy</span>
+      </button>
+      <button class="sound-btn" style="background:#FF6BB5;" data-sound="Elmo">
+        <span class="btn-emoji">🔴</span><span class="btn-label">Elmo</span>
+      </button>
+      <button class="sound-btn" style="background:#FFD93D;" data-sound="Farty">
+        <span class="btn-emoji">💨</span><span class="btn-label">Farty</span>
+      </button>
+      <button class="sound-btn" style="background:#6BCB77;" data-sound="Hello USA">
+        <span class="btn-emoji">🇺🇸</span><span class="btn-label">Hello USA</span>
+      </button>
+      <button class="sound-btn" style="background:#4D96FF;" data-sound="I Like">
+        <span class="btn-emoji">👍</span><span class="btn-label">I Like</span>
+      </button>
+      <button class="sound-btn" style="background:#C77DFF;" data-sound="Let's Go">
+        <span class="btn-emoji">🚀</span><span class="btn-label">Let's Go</span>
+      </button>
+      <button class="sound-btn" style="background:#00C9FF;" data-sound="Meow">
+        <span class="btn-emoji">🐱</span><span class="btn-label">Meow</span>
+      </button>
+      <button class="sound-btn" style="background:#52E3E1;" data-sound="Morgan">
+        <span class="btn-emoji">💼</span><span class="btn-label">Morgan</span>
+      </button>
+      <button class="sound-btn" style="background:#56CCF2;" data-sound="Nice Payment">
+        <span class="btn-emoji">💰</span><span class="btn-label">Nice Payment</span>
+      </button>
+      <button class="sound-btn" style="background:#E040FB;" data-sound="Nicholas Maratos">
+        <span class="btn-emoji">🎩</span><span class="btn-label">Nicholas Maratos</span>
+      </button>
+      <button class="sound-btn" style="background:#FF6B6B;" data-sound="Oh My God">
+        <span class="btn-emoji">😱</span><span class="btn-label">Oh My God</span>
+      </button>
+      <button class="sound-btn" style="background:#FFB347;" data-sound="Very Nice">
+        <span class="btn-emoji">👌</span><span class="btn-label">Very Nice</span>
+      </button>
+      <button class="sound-btn" style="background:#F7971E;" data-sound="Yeah">
+        <span class="btn-emoji">🙌</span><span class="btn-label">Yeah</span>
+      </button>
+    </div>
+
+    <footer>🎵 tap a button · sounds by Rick 🎵</footer>
+  </div>
+
+  <script>
+    // Background slideshow
+    const bgs = document.querySelectorAll('.bg-slide');
+    let bgIdx = 0;
+    setInterval(() => {
+      bgs[bgIdx].classList.remove('active');
+      bgIdx = (bgIdx + 1) % bgs.length;
+      bgs[bgIdx].classList.add('active');
+    }, 5000);
+
+    // Wire up buttons
+    document.querySelectorAll('.sound-btn').forEach(btn => {
+      const name = btn.dataset.sound;
+      const audio = new Audio(encodeURIComponent(name) + '.m4a');
+
+      btn.addEventListener('click', function(e) {
+        // Ripple
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        ripple.style.top  = (e.clientY - rect.top  - size / 2) + 'px';
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+
+        // Play
+        audio.currentTime = 0;
+        audio.play();
+        btn.classList.add('playing');
+        audio.onended = () => btn.classList.remove('playing');
+      });
+    });
+  </script>
+</body>
+</html>
